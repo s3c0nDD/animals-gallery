@@ -1,25 +1,59 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Form from './components/Form'
+import imagesService from './services/animals.service'
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      count: 1,
+      images: [],
+      processing: false,
+      type: 'shibes',
+    }
+  }
+
+  handleChange = (propName, propValue) => {
+    if (propName === 'count') {
+      if (propValue > 10) { propValue = 10 }
+      if (propValue < 1) { propValue = 1 }
+    }
+    this.setState({ [propName]: propValue });
+  };
+
+  handleSubmit = async () => {
+    const { count, type} = this.state;
+    this.setState({ processing: true });
+    const images = await imagesService.fetchImages({ count, type });
+    this.setState({ images: Array.from(images), processing: false });
+  };
+
   render() {
+    const {
+      count,
+      images,
+      processing,
+      type
+    } = this.state;
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div className="app">
+        <Form
+          onSubmit={this.handleSubmit}
+          handleChange={this.handleChange}
+          handleSubmit={this.handleSubmit}
+          type={type}
+          count={count}
+          processing={processing}
+        />
+        {images && images.map((img, index) => (
+            <img
+              style={{ maxWidth: 300 }}
+              key={index}
+              src={img}
+              alt={`some ${type}, nr ${index}`}
+            />
+        ))}
       </div>
     );
   }
